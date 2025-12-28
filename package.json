@@ -1,0 +1,39 @@
+{
+	"name": "wails-build-helper",
+	"version": "1.0.0",
+	"description": "A comprehensive GitHub Action to help build Wails applications on Windows with automated setup and configuration",
+	"type": "module",
+	"main": "dist/index.js",
+	"scripts": {
+		"build": "ncc build src/index.js -o dist --minify"
+	},
+	"keywords": [
+		"github-actions",
+		"wails",
+		"golang",
+		"build",
+		"windows",
+		"desktop-app",
+		"go",
+		"webview"
+	],
+	"author": "ovftank",
+	"license": "MIT",
+	"dependencies": {
+		"@actions/core": "2.0.1",
+		"@actions/exec": "2.0.0",
+		"@actions/io": "2.0.0"
+	},
+	"devDependencies": {
+		"@vercel/ncc": "0.38.4"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/ovftank/wails-build-windows.git"
+	},
+	"bugs": {
+		"url": "https://github.com/ovftank/wails-build-windows/issues"
+	},
+	"homepage": "https://github.com/ovftank/wails-build-windows#readme"
+}
+

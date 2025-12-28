@@ -1,0 +1,27 @@
+name: 'Wails Build Windows'
+description: 'Build Wails applications on Windows with NSIS installer using Go 1.25.5 and pnpm'
+author: 'ovftank'
+
+branding:
+  icon: 'terminal'
+  color: 'blue'
+
+outputs:
+  build-status:
+    description: 'Status of the build process (success/failed)'
+
+  installer-path:
+    description: 'Path to the NSIS installer (.exe)'
+
+  binary-path:
+    description: 'Path to the application executable (.exe)'
+
+  build-time:
+    description: 'Time taken to build the application'
+
+  wails-version:
+    description: 'Installed Wails version'
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
