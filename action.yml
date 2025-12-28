@@ -3,25 +3,26 @@ description: 'Build Wails applications on Windows with NSIS installer using Go 1
 author: 'ovftank'
 
 branding:
-  icon: 'terminal'
-  color: 'blue'
+    icon: 'terminal'
+    color: 'blue'
 
 outputs:
-  build-status:
-    description: 'Status of the build process (success/failed)'
+    build-status:
+        description: 'Status of the build process (success/failed)'
 
-  installer-path:
-    description: 'Path to the NSIS installer (.exe)'
+    installer-path:
+        description: 'Path to the NSIS installer (.exe)'
 
-  binary-path:
-    description: 'Path to the application executable (.exe)'
+    binary-path:
+        description: 'Path to the application executable (.exe)'
 
-  build-time:
-    description: 'Time taken to build the application'
+    build-time:
+        description: 'Time taken to build the application'
 
-  wails-version:
-    description: 'Installed Wails version'
+    wails-version:
+        description: 'Installed Wails version'
 
 runs:
-  using: 'node20'
-  main: 'dist/index.js'
+    using: 'node20'
+    main: 'dist/index.js'
+

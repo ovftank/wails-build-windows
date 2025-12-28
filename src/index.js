@@ -9,8 +9,6 @@ const execAsync = promisify(execSync);
 
 let startTime;
 
-const GO_VERSION = '1.25.5';
-
 const run = async () => {
 	try {
 		startTime = Date.now();
@@ -20,48 +18,47 @@ const run = async () => {
 		const goPath = process.env.GOPATH || path.join(process.env.USERPROFILE, 'go');
 		core.exportVariable('GOPATH', goPath);
 
-		core.info(`Checking Go version (expected: go${GO_VERSION})...`);
-		try {
-			const { stdout: goOutput } = await execAsync('go version');
-			core.info(`Go version: ${goOutput.trim()}`);
-			core.setOutput('go-version', goOutput.trim());
-		} catch (error) {
-			core.warning(`Could not determine Go version: ${error.message}`);
+		await exec('corepack', ['enable', 'pnpm']);
+
+		const frontendDir = path.join(process.cwd(), 'frontend');
+		if (fs.existsSync(path.join(frontendDir, 'package.json'))) {
+			core.info('Installing frontend dependencies with pnpm...');
+			await exec('pnpm', ['install'], { cwd: frontendDir });
+		} else {
+			core.info(
+				'No frontend/package.json found, skipping frontend dependencies installation',
+			);
 		}
 
-		core.info('Checking Node.js version...');
-		try {
-			const { stdout: nodeOutput } = await execAsync('node --version');
-			core.info(`Node.js version: ${nodeOutput.trim()}`);
-		} catch (error) {
-			core.warning(`Could not determine Node.js version: ${error.message}`);
-		}
+		const installPs1 = String.raw`.\install.ps1`;
 
-		core.info('Enabling pnpm using Corepack...');
-		try {
-			await exec('corepack', ['enable', 'pnpm']);
-			const { stdout: pnpmOutput } = await execAsync('pnpm --version');
-			core.info(`pnpm version: ${pnpmOutput.trim()}`);
-		} catch {
-			core.warning(`Corepack not available, installing pnpm manually...`);
-			await exec('npm', ['install', '-g', 'pnpm@latest']);
-		}
+		await exec('powershell', [
+			'-NoProfile',
+			'-Command',
+			[
+				`$ErrorActionPreference = 'Stop'`,
+				`Write-Host "Installing Scoop..."`,
+				`Invoke-WebRequest -Uri "https://get.scoop.sh" -OutFile "install.ps1"`,
+				`${installPs1} -RunAsAdmin`,
+				`Write-Host "Installing NSIS and UPX via Scoop..."`,
+				`scoop bucket add extras`,
+				`scoop bucket add main`,
+				`scoop install nsis`,
+				`scoop install main/upx`,
+				`Write-Host "NSIS and UPX installed successfully via Scoop"`,
+			].join('; '),
+		]);
 
-		core.info('Installing dependencies with pnpm...');
-		await exec('pnpm', ['install']);
-
-		core.info('Checking NSIS installation...');
-		try {
-			const { stdout: makensisOutput } = await execAsync('makensis --version');
-			core.info(`NSIS found: ${makensisOutput.trim()}`);
-		} catch {
-			core.warning('NSIS not found, installing via chocolatey...');
-			await exec('choco', ['install', 'nsis', '-y']);
-			core.info('NSIS installed successfully');
-		}
+		const scoopShimPath = path.join(process.env.USERPROFILE, 'scoop', 'shims');
+		core.addPath(scoopShimPath);
+		core.info(`Added ${scoopShimPath} to PATH`);
 
 		core.info('Installing Wails CLI (latest)...');
 		await exec('go', ['install', 'github.com/wailsapp/wails/v2/cmd/wails@latest']);
+
+		const goBinDir = path.join(goPath, 'bin');
+		core.addPath(goBinDir);
+		core.info(`Added ${goBinDir} to PATH`);
 
 		let installedWailsVersion = 'latest';
 		try {
@@ -84,7 +81,16 @@ const run = async () => {
 		let binaryPath = '';
 
 		try {
-			await exec('wails', ['build', '-nsis', '-clean']);
+			await exec('wails', [
+				'build',
+				'-nsis',
+				'-clean',
+				'-ldflags',
+				'-w -s',
+				'-upx',
+				'-upxflags',
+				'-9',
+			]);
 
 			const buildDir = path.join(process.cwd(), 'build', 'bin');
 			if (fs.existsSync(buildDir)) {
@@ -129,6 +135,5 @@ const run = async () => {
 
 export { run };
 
-if (import.meta.url === `file://${process.argv[1]}`) {
-	run();
-}
+run();
+

@@ -6,10 +6,6 @@ yarn-error.log*
 package-lock.json
 yarn.lock
 
-# Build output
-dist/
-build/bin/
-
 # OS files
 .DS_Store
 Thumbs.db

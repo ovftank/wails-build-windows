@@ -19,7 +19,7 @@ on: push
 
 jobs:
     build:
-        runs-on: windows-latest
+        runs-on: windows-2025
         steps:
             - uses: actions/checkout@v6
             - uses: ovftank/wails-build-windows@v1.0.0
